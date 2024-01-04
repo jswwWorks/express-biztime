@@ -12,7 +12,6 @@ const router = new express.Router();
  *
  *  Returns obj w/ list of companies -> {companies: [{code, name}, ...]}
 */
-
 router.get('/', async function (req, res, next) {
   const results = await db.query(
     `SELECT code, name, description
@@ -23,18 +22,14 @@ router.get('/', async function (req, res, next) {
   return res.json({ companies });
 });
 
+
 /** GET /companies/[code]
  *
  *  Returns obj of company -> {company: {code, name, description}}
 */
-
 router.get('/:code', async function (req, res, next) {
 
   const code = req.params.code;
-
-  if (code === undefined) {
-    throw new BadRequestError();
-  }
 
   const result = await db.query(
     `SELECT code, name, description
@@ -50,6 +45,7 @@ router.get('/:code', async function (req, res, next) {
   return res.json({ company });
 });
 
+
 /** POST /companies
  *
  *  Adds a company to database.
@@ -59,28 +55,28 @@ router.get('/:code', async function (req, res, next) {
  *  Returns object (as JSON) that looks like this:
  *  {company: {code, name, description}}
  */
-router.post('/', async function(req, res, next) {
+router.post('/', async function (req, res, next) {
   if (req.body === undefined) throw new BadRequestError();
 
   const { code, name, description } = req.body;
 
   if (code === undefined ||
-      name === undefined ||
-      description === undefined) {
-        throw BadRequestError("Please enter a code, name, and a description.");
+    name === undefined ||
+    description === undefined) {
+    throw BadRequestError("Please enter a code, name, and a description.");
   }
 
   let result;
+
   try {
     result = await db.query(
       `INSERT INTO companies (code, name, description)
         values ($1, $2, $3)
         RETURNING code, name, description`,
-        [code, name, description], // fun fact: this is a trailing comma
+      [code, name, description], // fun fact: this is a trailing comma
     );
   } catch (err) {
-    // console.log(err);
-    throw new BadRequestError("Company code already in use.");
+    throw new BadRequestError("Company code or company name already in use.");
   }
 
   const company = result.rows[0];
@@ -93,23 +89,24 @@ router.post('/', async function(req, res, next) {
  *
  *  Completely edits an existing company.
  *
- *  Takes JSON body {name, description}
+ *  Takes JSON body: {name, description}
  *
  *  Returns updated company object: {company: {code, name, description}}
  *
  *  Should return 404 if company cannot be found.
 */
-router.put('/:code', async function(req, res, next) {
-  if (req.body === undefined) throw new BadRequestError();
+router.put('/:code', async function (req, res, next) {
+  if (req.body === undefined) throw new BadRequestError("nothing in body");
 
+  const code = req.params.code;
   const { name, description } = req.body;
 
-  if (name === undefined ||
-    description === undefined) {
-      throw BadRequestError("Please enter a code, name, and a description.");
-}
+  if (name === undefined || description === undefined) {
+    console.log('name or description empty');
+    throw new BadRequestError("Please enter a name and a description.");
+  }
 
-let result;
+  let result;
   try {
     result = await db.query(
       `UPDATE companies
@@ -117,7 +114,7 @@ let result;
             description = $2
         WHERE code = $3
         RETURNING code, name, description`,
-        [name, description, req.params.code],
+      [name, description, code],
     );
   } catch (err) {
     throw new BadRequestError("Duplicate key value violates unique constraint.");
@@ -125,6 +122,7 @@ let result;
   }
 
   if (result.rows.length === 0) {
+    console.log("code reached");
     throw new NotFoundError(`Company code ${code} not found in database.`);
   }
 
@@ -132,7 +130,8 @@ let result;
 
   return res.json({ company: company });
 
-})
+});
+
 
 /** DELETE /companies/[code]
  *
@@ -154,7 +153,7 @@ router.delete('/:code', async function (req, res, next) {
       `DELETE FROM companies
         WHERE code = $1
         RETURNING code, name, description`,
-        [req.params.code],
+      [req.params.code],
     );
   } catch (err) {
     console.log('err', err);
@@ -171,7 +170,7 @@ router.delete('/:code', async function (req, res, next) {
   }
 
   return res.json({ status: "deleted" });
-})
+});
 
 
 module.exports = router;

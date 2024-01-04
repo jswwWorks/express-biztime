@@ -13,10 +13,8 @@ let db = new Client({
   connectionString: DB_URI
 });
 
-
 // Step 2: connect to the desired database
 db.connect();
-
 
 // Step 3: Export the databse so it can be used in your program
 module.exports = db;
