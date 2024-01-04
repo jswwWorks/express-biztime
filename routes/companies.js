@@ -42,7 +42,7 @@ router.get('/:code', async function (req, res, next) {
       WHERE code = $1`, [code]);
 
   if (result.rows.length === 0) {
-    throw new BadRequestError(`Company code ${code} not found in database.`);
+    throw new NotFoundError(`Company code ${code} not found in database.`);
   }
 
   const company = result.rows[0];
@@ -60,6 +60,7 @@ router.get('/:code', async function (req, res, next) {
  *  {company: {code, name, description}}
  */
 router.post('/', async function(req, res, next) {
+  if (req.body === undefined) throw new BadRequestError();
 
   const { code, name, description } = req.body;
 
@@ -81,6 +82,36 @@ router.post('/', async function(req, res, next) {
   return res.status(201).json({ company });
 });
 
+
+/** PUT /companies/[code]
+ *
+ *  Completely edits an existing company.
+ *
+ *  Takes JSON body {name, description}
+ *
+ *  Returns updated company object: {company: {code, name, description}}
+ *
+ *  Should return 404 if company cannot be found.
+*/
+router.put('/:code', async function(req, res, next) {
+  if (req.body === undefined) throw new BadRequestError();
+
+  const { name, description } = req.body;
+
+  const result = await db.query(
+    `UPDATE companies
+      SET name = $1,
+          description = $2
+      WHERE code = $3
+      RETURNING code, name, description`,
+      [name, description, req.params.code],
+  );
+
+  const company = result.rows[0];
+
+  return res.json({ company: company });
+
+})
 
 
 module.exports = router;
