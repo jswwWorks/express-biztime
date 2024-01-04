@@ -1,6 +1,10 @@
 \echo 'Delete and recreate biztime db?'
 \prompt 'Return for yes or control-C to cancel > ' foo
 
+-- this was the command we ran to run this file:
+-- psql biztime -f biztime.sql
+
+
 DROP DATABASE IF EXISTS biztime;
 CREATE DATABASE biztime;
 \connect biztime;
