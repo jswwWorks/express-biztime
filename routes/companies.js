@@ -50,6 +50,36 @@ router.get('/:code', async function (req, res, next) {
   return res.json({ company });
 });
 
+/** POST /companies
+ *
+ *  Adds a company to database.
+ *
+ *  Takes JSON body: {code, name, description}
+ *
+ *  Returns object (as JSON) that looks like this:
+ *  {company: {code, name, description}}
+ */
+router.post('/', async function(req, res, next) {
+
+  const { code, name, description } = req.body;
+
+  if (code === undefined ||
+      name === undefined ||
+      description === undefined) {
+        throw BadRequestError("Please enter a code, name, and a description.");
+  }
+
+  const result = await db.query(
+    `INSERT INTO companies (code, name, description)
+      values ($1, $2, $3)
+      RETURNING code, name, description`,
+      [code, name, description], // fun fact: this is a trailing comma
+  );
+
+  const company = result.rows[0];
+
+  return res.status(201).json({ company });
+});
 
 
 
