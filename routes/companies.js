@@ -96,10 +96,14 @@ router.post('/', async function (req, res, next) {
  *  Should return 404 if company cannot be found.
 */
 router.put('/:code', async function (req, res, next) {
-  if (req.body === undefined) throw new BadRequestError("nothing in body");
+  // if (req.body === undefined) throw new BadRequestError("nothing in body");
 
   const code = req.params.code;
+
+
   const { name, description } = req.body;
+  console.log('julia can you see this code');
+  console.log('name, description:', name, description);
 
   if (name === undefined || description === undefined) {
     console.log('name or description empty');
@@ -117,8 +121,7 @@ router.put('/:code', async function (req, res, next) {
       [name, description, code],
     );
   } catch (err) {
-    throw new BadRequestError("Duplicate key value violates unique constraint.");
-    // Placeholder text for now ^
+    throw new BadRequestError("All company names and codes must be unique.");
   }
 
   if (result.rows.length === 0) {
@@ -128,7 +131,7 @@ router.put('/:code', async function (req, res, next) {
 
   const company = result.rows[0];
 
-  return res.json({ company: company });
+  return res.json({ company });
 
 });
 
