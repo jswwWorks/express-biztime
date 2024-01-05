@@ -6,6 +6,7 @@ const express = require("express");
 const { NotFoundError } = require("./expressError");
 
 const companyRoutes = require("./routes/companies");
+const invoiceRoutes = require("./routes/invoices");
 const { logger } = require("./middleware");
 
 const app = express();
@@ -19,6 +20,9 @@ app.use(express.urlencoded());
 
 // Express Router for company routes
 app.use("/companies", companyRoutes);
+
+// Express Router for invoice routes
+app.use("/invoices", invoiceRoutes);
 
 
 /** 404 handler: matches unmatched routes; raises NotFoundError. */
