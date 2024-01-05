@@ -71,7 +71,50 @@ router.get('/:id', async function (req, res, next) {
 
   return res.json({ invoice });
 
-})
+});
+
+
+/** POST /invoices
+ *
+ *  Adds an invoice to database.
+ *
+ *  Takes JSON body: { comp_code, amt}
+ *
+ *  Returns object (as JSON) that looks like this:
+ *  {invoice:
+ *    {id,
+ *     comp_code,
+ *     amt, paid,
+ *     add_date,
+ *     paid_date}
+ *  }
+ *
+ */
+router.post('/', async function (req, res, next) {
+  if (req.body === undefined) throw new BadRequestError();
+
+  const { comp_code, amt } = req.body;
+
+  let result;
+
+  try {
+    result = await db.query(
+      `INSERT INTO invoices (comp_code, amt)
+        values ($1, $2)
+        RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+      [comp_code, amt],
+    );
+  } catch (err) {
+    throw new BadRequestError(
+      "Potential errors: amt not INT, amt <= 0, comp_code not linked"
+    );
+  }
+
+  const invoice = result.rows[0];
+
+  return res.status(201).json({ invoice });
+});
+
 
 
 
