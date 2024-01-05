@@ -145,11 +145,14 @@ router.put('/:id', async function (req, res, next) {
     );
   } catch (err) {
     throw new BadRequestError("Amount must be more than 0.");
+    // TODO: ^ making assumption about error
+    // consider not throwing error and letting it propogate error
   }
 
   if (result.rows.length === 0) {
     console.log("code reached");
     throw new NotFoundError(`Company code ${invoiceId} not found in database.`);
+    // TODO: consider writing error message highly structured/terse
   }
   // TODO: ^ db can potentially catch this instead, BUT HOW??
 
