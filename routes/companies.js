@@ -97,13 +97,11 @@ router.post('/', async function (req, res, next) {
 */
 router.put('/:code', async function (req, res, next) {
   // if (req.body === undefined) throw new BadRequestError("nothing in body");
+  // FIXME: ^ this doesn't trigger properly
 
   const code = req.params.code;
 
-
   const { name, description } = req.body;
-  console.log('julia can you see this code');
-  console.log('name, description:', name, description);
 
   if (name === undefined || description === undefined) {
     console.log('name or description empty');
@@ -145,28 +143,15 @@ router.put('/:code', async function (req, res, next) {
  *  Should return 404 if company cannot be found.
  */
 router.delete('/:code', async function (req, res, next) {
-  // console.log('req.params.code:', req.params.code);
-  // if (req.params.code === undefined) throw new BadRequestError();
 
   const code = req.params.code;
 
-  let result;
-  try {
-    result = await db.query(
+  const result = await db.query(
       `DELETE FROM companies
         WHERE code = $1
         RETURNING code, name, description`,
       [req.params.code],
     );
-  } catch (err) {
-    console.log('err', err);
-    throw new BadRequestError("Could not delete company.");
-    // Placeholder text for now ^
-  }
-
-  console.log('This is result', result);
-  console.log('This is result.rows', result.rows);
-  console.log('This is result.rows.length', result.rows.length);
 
   if (result.rows.length === 0) {
     throw new NotFoundError(`Company code ${code} not found in database.`);
