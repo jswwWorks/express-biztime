@@ -19,6 +19,7 @@ CREATE TABLE companies (
 CREATE TABLE invoices (
   id SERIAL PRIMARY KEY,
   comp_code TEXT NOT NULL REFERENCES companies ON DELETE CASCADE,
+  -- ^ foreign key to companies table "code"
   amt NUMERIC(10, 2) NOT NULL CHECK (amt >= 0),
   paid BOOLEAN DEFAULT FALSE NOT NULL,
   add_date  DATE DEFAULT CURRENT_DATE NOT NULL,

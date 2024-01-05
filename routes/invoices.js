@@ -106,7 +106,7 @@ router.post('/', async function (req, res, next) {
     );
   } catch (err) {
     throw new BadRequestError(
-      "Potential errors: amt not INT, amt <= 0, comp_code not linked"
+      "Amount need to be positive integer or Company Code invalid."
     );
   }
 
@@ -115,6 +115,49 @@ router.post('/', async function (req, res, next) {
   return res.status(201).json({ invoice });
 });
 
+
+/** PUT /invoices/[id]
+ *
+ *  Completely edits an existing invoice.
+ *
+ *  Takes JSON body: { amt}
+ *
+ *  Returns updated invoice object:
+ *  {invoice: {id, comp_code, amt, paid, add_date, paid_date}}
+ *
+ *  Should return 404 if invoice cannot be found.
+*/
+router.put('/:id', async function (req, res, next) {
+  if (req.body === undefined) throw new BadRequestError();
+
+  const invoiceId = req.params.id;
+
+  const { amt } = req.body;
+
+  let result;
+  try {
+    result = await db.query(
+      `UPDATE invoices
+        SET amt = $1
+        WHERE id = $2
+        RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+      [amt, invoiceId],
+    );
+  } catch (err) {
+    throw new BadRequestError("Amount must be more than 0.");
+  }
+
+  if (result.rows.length === 0) {
+    console.log("code reached");
+    throw new NotFoundError(`Company code ${invoiceId} not found in database.`);
+  }
+  // TODO: ^ db can potentially catch this instead, BUT HOW??
+
+  const invoice = result.rows[0];
+
+  return res.json({ invoice });
+
+});
 
 
 
