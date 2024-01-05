@@ -160,6 +160,10 @@ router.put('/:id', async function (req, res, next) {
 });
 
 
+/** DELETE invoices route */
+
+
+
 
 
 module.exports = router;
