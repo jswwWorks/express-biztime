@@ -10,7 +10,8 @@ const router = new express.Router();
 
 /** GET /companies: get list of companies
  *
- *  Returns obj w/ list of companies -> {companies: [{code, name}, ...]}
+ *  Returns obj w/ list of companies -> {companies: [{code, name, description}, ...]}
+ *  TODO: missing description
 */
 router.get('/', async function (req, res, next) {
   const results = await db.query(
@@ -65,6 +66,7 @@ router.post('/', async function (req, res, next) {
     description === undefined) {
     throw BadRequestError("Please enter a code, name, and a description.");
   }
+  // TODO: ^ can consider using try/catch into db to check instead
 
   let result;
 
@@ -78,6 +80,9 @@ router.post('/', async function (req, res, next) {
   } catch (err) {
     throw new BadRequestError("Company code or company name already in use.");
   }
+
+  // TODO: consider taking the name the user inputs as a name.toLowerCase()
+  // for code, sluggify method, etc (but replace spaces w/ dashes)
 
   const company = result.rows[0];
 
@@ -96,17 +101,21 @@ router.post('/', async function (req, res, next) {
  *  Should return 404 if company cannot be found.
 */
 router.put('/:code', async function (req, res, next) {
-  // if (req.body === undefined) throw new BadRequestError("nothing in body");
+  console.log('req.body:', req.body);
+  if (req.body === undefined) throw new BadRequestError("nothing in body");
   // FIXME: ^ this doesn't trigger properly
+  // TODO: sending an empty JSON body in Insomnia is still sending a body
 
   const code = req.params.code;
 
   const { name, description } = req.body;
 
-  if (name === undefined || description === undefined) {
-    console.log('name or description empty');
-    throw new BadRequestError("Please enter a name and a description.");
-  }
+  // if (name === undefined || description === undefined) {
+  //   console.log('name or description empty');
+  //   throw new BadRequestError("Please enter a name and a description.");
+  // }
+  // TODO: ^ can be checked in db instead in the try/catch
+  // just checked: it works!
 
   let result;
   try {
@@ -126,6 +135,7 @@ router.put('/:code', async function (req, res, next) {
     console.log("code reached");
     throw new NotFoundError(`Company code ${code} not found in database.`);
   }
+  // TODO: ^ db can potentially catch this instead
 
   const company = result.rows[0];
 
